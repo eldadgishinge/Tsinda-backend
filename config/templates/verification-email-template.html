@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Verification Code</title>
+  <style>
+    /* Base styles */
+    body {
+      font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: #2d3748;
+      margin: 0;
+      padding: 0;
+      background-color: #f0f4f8;
+      font-size: 14px; /* Reduced base font size */
+    }
+    
+    /* Typography system - all sizes reduced */
+    .text-xs {
+      font-size: 0.625rem; /* 10px */
+      line-height: 1.4;
+    }
+    
+    .text-sm {
+      font-size: 0.75rem; /* 12px */
+      line-height: 1.5;
+    }
+    
+    .text-base {
+      font-size: 0.875rem; /* 14px */
+      line-height: 1.6;
+    }
+    
+    .text-lg {
+      font-size: 1rem; /* 16px */
+      line-height: 1.6;
+    }
+    
+    .text-xl {
+      font-size: 1.125rem; /* 18px */
+      line-height: 1.5;
+    }
+    
+    .text-2xl {
+      font-size: 1.25rem; /* 20px */
+      line-height: 1.4;
+    }
+    
+    .text-3xl {
+      font-size: 1.5rem; /* 24px */
+      line-height: 1.3;
+    }
+    
+    .font-light {
+      font-weight: 300;
+    }
+    
+    .font-normal {
+      font-weight: 400;
+    }
+    
+    .font-medium {
+      font-weight: 500;
+    }
+    
+    .font-semibold {
+      font-weight: 600;
+    }
+    
+    .font-bold {
+      font-weight: 700;
+    }
+    
+    /* Container */
+    .container {
+      max-width: 600px;
+      margin: 20px auto;
+      background-color: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      position: relative;
+    }
+    
+    /* Decorative elements */
+    .top-pattern {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 6px;
+      background: linear-gradient(90deg, #080e5f 0%, #3949ab 50%, #080e5f 100%);
+    }
+    
+    .side-pattern {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 6px;
+      height: 100%;
+      background: linear-gradient(180deg, #080e5f 0%, #3949ab 50%, #080e5f 100%);
+    }
+    
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 30px 0 25px;
+      background: linear-gradient(135deg, #f8f9ff 0%, #eef2ff 100%);
+      border-bottom: 1px solid #e8eeff;
+      position: relative;
+    }
+    
+    .header:after {
+      content: "";
+      position: absolute;
+      bottom: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 24px;
+      height: 24px;
+      background-color: #ffffff;
+      border: 1px solid #e8eeff;
+      border-width: 0 1px 1px 0;
+      transform: translateX(-50%) rotate(45deg);
+      z-index: 1;
+    }
+    
+    .logo {
+      max-width: 160px;
+      height: auto;
+      filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.1));
+    }
+    
+    /* Content */
+    .content {
+      padding: 35px 40px;
+      position: relative;
+      z-index: 2;
+    }
+    
+    .title {
+      color: #080e5f;
+      margin-top: 0;
+      margin-bottom: 1.25rem;
+      font-weight: 700;
+      font-size: 1.375rem; /* 22px - reduced */
+      letter-spacing: -0.025em;
+      position: relative;
+      display: inline-block;
+    }
+    
+    .title:after {
+      content: "";
+      position: absolute;
+      bottom: -6px;
+      left: 0;
+      width: 35px;
+      height: 3px;
+      background: linear-gradient(90deg, #080e5f, #3949ab);
+      border-radius: 2px;
+    }
+    
+    .greeting {
+      font-size: 0.9375rem; /* 15px - reduced */
+      margin-bottom: 1rem;
+      color: #2d3748;
+    }
+    
+    .intro {
+      font-size: 0.875rem; /* 14px - reduced */
+      margin-bottom: 1.25rem;
+      color: #4a5568;
+      line-height: 1.6;
+    }
+    
+    .highlight {
+      color: #2d3748;
+      font-weight: 600;
+    }
+    
+    /* Verification code */
+    .verification-code-container {
+      margin: 2rem 0;
+      text-align: center;
+      position: relative;
+    }
+    
+    .verification-code-container:before,
+    .verification-code-container:after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      width: 60px;
+      height: 2px;
+      background: linear-gradient(90deg, rgba(8, 14, 95, 0), rgba(8, 14, 95, 0.2));
+    }
+    
+    .verification-code-container:before {
+      left: 0;
+    }
+    
+    .verification-code-container:after {
+      right: 0;
+      transform: rotate(180deg);
+    }
+    
+    .verification-code {
+      display: inline-block;
+      font-size: 1.75rem; /* 28px - reduced */
+      font-weight: 700;
+      letter-spacing: 0.5rem; /* 8px - reduced */
+      padding: 1.25rem 1.75rem;
+      background: linear-gradient(135deg, #f8f9ff 0%, #eef2ff 100%);
+      border-radius: 10px;
+      color: #080e5f;
+      border: 2px dashed rgba(8, 14, 95, 0.3);
+      box-shadow: 0 3px 12px rgba(8, 14, 95, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+      position: relative;
+    }
+    
+    .verification-code:before {
+      content: "";
+      position: absolute;
+      top: -4px;
+      left: -4px;
+      right: -4px;
+      bottom: -4px;
+      border: 1px solid rgba(8, 14, 95, 0.08);
+      border-radius: 12px;
+      z-index: -1;
+    }
+    
+    /* Button */
+    .button-container {
+      text-align: center;
+      margin: 1.75rem 0;
+    }
+    
+    .button {
+      display: inline-block;
+      padding: 0.75rem 1.75rem;
+      background: linear-gradient(135deg, #080e5f 0%, #1a237e 100%);
+      color: white;
+      text-decoration: none;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 0.875rem; /* 14px - reduced */
+      letter-spacing: 0.025em;
+      transition: all 0.3s;
+      box-shadow: 0 4px 12px rgba(8, 14, 95, 0.25);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(8, 14, 95, 0.35);
+    }
+    
+    .button:after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, 
+        rgba(255, 255, 255, 0) 0%, 
+        rgba(255, 255, 255, 0.2) 50%, 
+        rgba(255, 255, 255, 0) 100%);
+      transition: all 0.8s;
+    }
+    
+    .button:hover:after {
+      left: 100%;
+    }
+    
+    /* Info box */
+    .info-box {
+      background-color: #f8f9ff;
+      border-left: 3px solid #080e5f;
+      padding: 1rem 1.25rem;
+      border-radius: 6px;
+      margin: 1.5rem 0;
+      position: relative;
+    }
+    
+    .info-box p {
+      margin: 0;
+      font-size: 0.8125rem; /* 13px - reduced */
+      color: #4a5568;
+    }
+    
+    /* Divider */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, 
+        rgba(8, 14, 95, 0) 0%, 
+        rgba(8, 14, 95, 0.15) 50%, 
+        rgba(8, 14, 95, 0) 100%);
+      margin: 1.75rem 0;
+    }
+    
+    /* Support section */
+    .support-text {
+      font-size: 0.8125rem; /* 13px - reduced */
+      color: #4a5568;
+      margin-bottom: 1rem;
+    }
+    
+    .contact-link {
+      color: #080e5f;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+    
+    .contact-link:hover {
+      color: #3949ab;
+    }
+    
+    .closing {
+      font-size: 0.8125rem; /* 13px - reduced */
+      margin-top: 1.25rem;
+      color: #4a5568;
+    }
+    
+    .signature {
+      font-weight: 600;
+      color: #2d3748;
+    }
+    
+    /* Footer */
+    .footer {
+      background: linear-gradient(135deg, #f8f9ff 0%, #eef2ff 100%);
+      text-align: center;
+      padding: 1.75rem 1.25rem;
+      border-top: 1px solid #e8eeff;
+      position: relative;
+    }
+    
+    .footer:before {
+      content: "";
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%) rotate(45deg);
+      width: 24px;
+      height: 24px;
+      background-color: #ffffff;
+      border: 1px solid #e8eeff;
+      border-width: 1px 0 0 1px;
+    }
+    
+    .footer-logo {
+      max-width: 100px;
+      margin-bottom: 1rem;
+      opacity: 0.8;
+    }
+    
+    .social-links {
+      margin: 1rem 0;
+    }
+    
+    .social-link {
+      display: inline-block;
+      margin: 0 0.5rem;
+      color: #080e5f;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.75rem; /* 12px - reduced */
+      transition: color 0.2s;
+    }
+    
+    .social-link:hover {
+      color: #3949ab;
+    }
+    
+    .footer-text {
+      font-size: 0.75rem; /* 12px - reduced */
+      color: #718096;
+      margin: 0.4rem 0;
+      line-height: 1.5;
+    }
+    
+    .copyright {
+      font-size: 0.75rem; /* 12px - reduced */
+      color: #718096;
+      margin-bottom: 0.4rem;
+    }
+    
+    .address {
+      font-size: 0.6875rem; /* 11px - reduced */
+      color: #a0aec0;
+      margin-bottom: 0.4rem;
+    }
+    
+    .disclaimer {
+      font-size: 0.6875rem; /* 11px - reduced */
+      color: #a0aec0;
+      margin-top: 0.75rem;
+    }
+    
+    /* Responsive adjustments */
+    @media screen and (max-width: 600px) {
+      .container {
+        margin: 10px auto;
+        border-radius: 10px;
+      }
+      
+      .content {
+        padding: 1.75rem 1.25rem;
+      }
+      
+      .title {
+        font-size: 1.25rem; /* 20px */
+      }
+      
+      .greeting {
+        font-size: 0.875rem; /* 14px */
+      }
+      
+      .intro {
+        font-size: 0.8125rem; /* 13px */
+      }
+      
+      .verification-code {
+        font-size: 1.5rem; /* 24px */
+        letter-spacing: 0.375rem; /* 6px */
+        padding: 1rem 1.25rem;
+      }
+      
+      .verification-code-container:before,
+      .verification-code-container:after {
+        width: 30px;
+      }
+      
+      .button {
+        padding: 0.625rem 1.5rem;
+        font-size: 0.8125rem; /* 13px */
+      }
+      
+      .info-box {
+        padding: 0.875rem 1rem;
+      }
+      
+      .info-box p {
+        font-size: 0.75rem; /* 12px */
+      }
+      
+      .support-text {
+        font-size: 0.75rem; /* 12px */
+      }
+      
+      .closing {
+        font-size: 0.75rem; /* 12px */
+      }
+      
+      .social-link {
+        font-size: 0.6875rem; /* 11px */
+        margin: 0 0.375rem;
+      }
+      
+      .footer-text,
+      .copyright {
+        font-size: 0.6875rem; /* 11px */
+      }
+      
+      .address,
+      .disclaimer {
+        font-size: 0.625rem; /* 10px */
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="top-pattern"></div>
+    <div class="side-pattern"></div>
+    
+    <div class="header">
+      <img src="https://res.cloudinary.com/dvcpllooj/image/upload/v1742721159/png_ikfb5n.png" alt="Tsinda Cyane Logo" class="logo">
+    </div>
+    
+    <div class="content">
+      <h1 class="title">Verify Your Account</h1>
+      
+      <p class="greeting">Hello <span class="highlight">{{userName}}</span>,</p>
+      
+      <p class="intro">Thank you for joining Tsinda Cyane! To complete your registration and access all our features, please verify your email address using the verification code below:</p>
+      
+      <div class="verification-code-container">
+        <div class="verification-code">{{verificationCode}}</div>
+      </div>
+      
+      <div class="info-box">
+        <p><span class="highlight">Important:</span> This verification code will expire in 60 minutes. If you didn't request this code, please disregard this email or contact our support team immediately.</p>
+      </div>
+      
+      <div class="button-container">
+        <a href="https://example.com/verify?code={{verificationCode}}" class="button">Verify My Account</a>
+      </div>
+      
+      <div class="divider"></div>
+      
+      <p class="support-text">Having trouble? If the button above doesn't work, you can also copy and paste the verification code manually on our verification page.</p>
+      
+      <p class="support-text">If you have any questions or need assistance, please contact our support team at <a href="mailto:tsindacyane@gmail.com" class="contact-link">tsindacyane@gmail.com</a></p>
+      
+      <p class="closing">We're excited to have you on board!</p>
+      
+      <p class="closing">Best regards,<br><span class="signature">The Tsinda Cyane Team</span></p>
+    </div>
+    
+    <div class="footer">
+      <img src="https://res.cloudinary.com/dvcpllooj/image/upload/v1742721159/png_ikfb5n.png" alt="Tsinda Cyane Logo" class="footer-logo">
+      
+      <div class="social-links">
+        <a href="#" class="social-link">Facebook</a> • 
+        <a href="#" class="social-link">Twitter</a> • 
+        <a href="#" class="social-link">Instagram</a> • 
+        <a href="#" class="social-link">LinkedIn</a>
+      </div>
+      
+      <p class="copyright">&copy; 2025 Tsinda Cyane. All rights reserved.</p>
+      <p class="address">123 ST Kicukiro Street, Kigali City, Rwanda</p>
+      <p class="disclaimer">You received this email because you signed up for an account at tsindacyane.rw</p>
+    </div>
+  </div>
+</body>
+</html>

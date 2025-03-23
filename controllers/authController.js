@@ -2,11 +2,12 @@ const User = require("../models/User")
 const jwt = require("jsonwebtoken")
 const { validationResult } = require("express-validator")
 const crypto = require("crypto")
+const { sendVerificationEmail } = require("../config/email-sender")
 
 // Generate JWT token
 const generateToken = (userId) => {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
-    expiresIn: "30d",
+    expiresIn: "24h",
   })
 }
 
@@ -23,7 +24,7 @@ exports.signup = async (req, res) => {
       return res.status(400).json({ errors: errors.array() })
     }
 
-    const { phoneNumber, email, password } = req.body
+    const { phoneNumber, email, password,name,role} = req.body
 
     // Check if user already exists
     const existingUser = await User.findOne({
@@ -48,12 +49,14 @@ exports.signup = async (req, res) => {
       authMethod: "local",
       verificationCode,
       verificationCodeExpires,
+      name,
+      role:role || "user"
     })
 
     await user.save()
 
     // TODO: Send verification code via SMS or email
-    console.log(`Verification code for ${phoneNumber}: ${verificationCode}`)
+    sendVerificationEmail(email,name, verificationCode)
 
     res.status(201).json({
       message: "User registered successfully. Please verify your account.",
@@ -104,6 +107,7 @@ exports.login = async (req, res) => {
         id: user._id,
         phoneNumber: user.phoneNumber,
         email: user.email,
+        role: user.role,
       },
     })
   } catch (error) {
@@ -149,6 +153,7 @@ exports.verifyAccount = async (req, res) => {
         id: user._id,
         phoneNumber: user.phoneNumber,
         email: user.email,
+        role: user.role,
       },
     })
   } catch (error) {
@@ -180,7 +185,7 @@ exports.resendVerificationCode = async (req, res) => {
     await user.save()
 
     // TODO: Send verification code via SMS or email
-    console.log(`New verification code for ${user.phoneNumber}: ${verificationCode}`)
+    sendVerificationEmail(user.email, user.name, verificationCode)
 
     res.json({
       message: "Verification code sent successfully",

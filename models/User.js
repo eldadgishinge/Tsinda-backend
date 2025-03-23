@@ -30,11 +30,17 @@ const UserSchema = new mongoose.Schema({
     enum: ["user", "admin", "instructor"],
     default: "user",
   },
+name: {
+    type: String,
+    required: [true, "Name is required"],
+    trim: true,
+  },
   authMethod: {
     type: String,
     enum: ["local", "google"],
     required: true,
   },
+
   googleId: {
     type: String,
   },
