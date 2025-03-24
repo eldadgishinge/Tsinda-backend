@@ -49,5 +49,8 @@ router.get(
 // @access  Private
 router.get("/me", auth, authController.getCurrentUser)
 
+// get all users
+router.get("/all", auth, authController.getAllUsers)
+
 module.exports = router
 

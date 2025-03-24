@@ -24,7 +24,7 @@ exports.signup = async (req, res) => {
       return res.status(400).json({ errors: errors.array() })
     }
 
-    const { phoneNumber, email, password,name,role} = req.body
+    const { phoneNumber, email, password, name, role } = req.body
 
     // Check if user already exists
     const existingUser = await User.findOne({
@@ -50,13 +50,13 @@ exports.signup = async (req, res) => {
       verificationCode,
       verificationCodeExpires,
       name,
-      role:role || "user"
+      role: role || "user"
     })
 
     await user.save()
 
     // TODO: Send verification code via SMS or email
-    sendVerificationEmail(email,name, verificationCode)
+    sendVerificationEmail(email, name, verificationCode)
 
     res.status(201).json({
       message: "User registered successfully. Please verify your account.",
@@ -227,3 +227,12 @@ exports.getCurrentUser = async (req, res) => {
   }
 }
 
+exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find({}).select("-password -verificationCode -verificationCodeExpires")
+    res.json(users)
+  } catch (error) {
+    console.error("Get all users error:", error)
+    res.status(500).json({ message: "Server error" })
+  }
+}
