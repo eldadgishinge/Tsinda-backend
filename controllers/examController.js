@@ -230,7 +230,7 @@ exports.createRandomExam = async (req, res) => {
       questions: questionIds,
       category,
       course,
-      status: status || "Draft",
+      status: status || "Published",
       createdBy: req.user.id,
     })
 

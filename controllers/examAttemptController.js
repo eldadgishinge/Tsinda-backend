@@ -16,7 +16,7 @@ exports.startExamAttempt = async (req, res) => {
 
     // Check if exam exists
     const exam = await Exam.findById(examId)
-    if (!exam) {
+    if (exam === null) {
       return res.status(404).json({ message: "Exam not found" })
     }
 
