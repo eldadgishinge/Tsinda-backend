@@ -1,3 +1,4 @@
+
 const express = require("express")
 const router = express.Router()
 const authController = require("../controllers/authController")
@@ -7,6 +8,8 @@ const {
   loginValidator,
   verifyAccountValidator,
   resendVerificationValidator,
+  updatePhoneValidator,
+  updatePasswordValidator,
 } = require("../middleware/validators")
 const passport = require("passport")
 
@@ -49,8 +52,17 @@ router.get(
 // @access  Private
 router.get("/me", auth, authController.getCurrentUser)
 
+// @route   PUT /api/auth/phone
+// @desc    Update phone number
+// @access  Private
+router.put("/phone", auth, updatePhoneValidator, authController.updatePhoneNumber)
+
+// @route   PUT /api/auth/password
+// @desc    Update password
+// @access  Private
+router.put("/password", auth, updatePasswordValidator, authController.updatePassword)
+
 // get all users
 router.get("/all", auth, authController.getAllUsers)
 
 module.exports = router
-

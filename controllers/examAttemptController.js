@@ -263,7 +263,14 @@ exports.getUserCompletedExams = async (req, res) => {
       user: req.user.id,
       status: "completed",
     })
-      .populate("exam", "title description duration passingScore")
+      .populate({
+        path: "exam",
+        select: "title description duration passingScore category",
+        populate: {
+          path: "category",
+          select: "name" // Add any fields you want from the category model
+        }
+      })
       .populate("course", "title")
       .sort({ endTime: -1 })
 

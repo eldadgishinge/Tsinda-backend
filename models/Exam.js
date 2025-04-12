@@ -42,6 +42,11 @@ const ExamSchema = new mongoose.Schema({
     type: String,
     ref: "Course",
   },
+  language: {
+    type: String,
+    enum: ["English", "French", "Kinyarwanda"],
+    required: [true, "Language is required"],
+  },
   status: {
     type: String,
     enum: ["Draft", "Published", "Archived"],
@@ -69,4 +74,3 @@ ExamSchema.pre("save", function (next) {
 })
 
 module.exports = mongoose.model("Exam", ExamSchema)
-

@@ -236,3 +236,76 @@ exports.getAllUsers = async (req, res) => {
     res.status(500).json({ message: "Server error" })
   }
 }
+
+// Update phone number
+exports.updatePhoneNumber = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { phoneNumber } = req.body;
+
+    // Check if phone number is already taken
+    const existingUser = await User.findOne({ phoneNumber });
+    if (existingUser && existingUser._id.toString() !== req.user.id) {
+      return res.status(400).json({ message: "Phone number already in use" });
+    }
+
+    // Update user's phone number
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.phoneNumber = phoneNumber;
+    await user.save();
+
+    res.json({
+      message: "Phone number updated successfully",
+      user: {
+        id: user._id,
+        phoneNumber: user.phoneNumber,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    console.error("Update phone number error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Update password
+exports.updatePassword = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { currentPassword, newPassword } = req.body;
+
+    // Find user
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check current password
+    const isMatch = await user.comparePassword(currentPassword);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Current password is incorrect" });
+    }
+
+    // Update password
+    user.password = newPassword;
+    await user.save();
+
+    res.json({ message: "Password updated successfully" });
+  } catch (error) {
+    console.error("Update password error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};

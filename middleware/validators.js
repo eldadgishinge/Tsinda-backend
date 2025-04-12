@@ -36,3 +36,19 @@ exports.verifyAccountValidator = [
 
 exports.resendVerificationValidator = [body("userId").notEmpty().withMessage("User ID is required")]
 
+exports.updatePhoneValidator = [
+  body("phoneNumber")
+    .notEmpty()
+    .withMessage("Phone number is required")
+    .matches(/^\+?[0-9]{10,15}$/)
+    .withMessage("Please enter a valid phone number"),
+]
+
+exports.updatePasswordValidator = [
+  body("currentPassword").notEmpty().withMessage("Current password is required"),
+  body("newPassword")
+    .notEmpty()
+    .withMessage("New password is required")
+    .isLength({ min: 6 })
+    .withMessage("New password must be at least 6 characters long"),
+]

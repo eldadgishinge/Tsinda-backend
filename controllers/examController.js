@@ -193,11 +193,7 @@ exports.createRandomExam = async (req, res) => {
     }
 
     // Build query for random questions
-    const query = { status: "Active" }
-
-    if (category) {
-      query.category = category
-    }
+    const query = { status: "Active", category }
 
     if (difficulty) {
       query.difficulty = difficulty
@@ -221,6 +217,9 @@ exports.createRandomExam = async (req, res) => {
     // Extract question IDs
     const questionIds = randomQuestions.map((q) => q._id)
 
+    // Get the language from the category
+    const language = categoryExists.language || "English" // Default to English if not set
+
     // Create the exam
     const exam = new Exam({
       title,
@@ -230,6 +229,7 @@ exports.createRandomExam = async (req, res) => {
       questions: questionIds,
       category,
       course,
+      language,
       status: status || "Published",
       createdBy: req.user.id,
     })

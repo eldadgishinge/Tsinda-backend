@@ -72,7 +72,7 @@ exports.createCourse = async (req, res) => {
       return res.status(400).json({ errors: errors.array() })
     }
 
-    const { title, description, language, category, videoUrl, documentUrl, duration, level } = req.body
+    const { title, description, language, category, thumbnailUrl, videoUrl, documentUrl, duration, level } = req.body
 
     // Check if category exists
     const categoryExists = await Category.findById(category)
@@ -88,6 +88,7 @@ exports.createCourse = async (req, res) => {
       instructor: req.user.id,
       videoUrl,
       documentUrl,
+      thumbnailUrl,
       duration,
       level,
     })

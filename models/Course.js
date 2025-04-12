@@ -31,6 +31,11 @@ const CourseSchema = new mongoose.Schema({
     ref: "User",
     required: [true, "Course instructor is required"],
   },
+  thumbnailUrl: {
+    type: String,
+    required: [true, "Course thumbnail is required"],
+    trim: true,
+  },
   videoUrl: {
     type: String,
     trim: true,
@@ -69,4 +74,3 @@ CourseSchema.pre("save", function (next) {
 })
 
 module.exports = mongoose.model("Course", CourseSchema)
-
