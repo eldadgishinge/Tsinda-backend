@@ -50,6 +50,11 @@ router.post("/random", auth, createRandomExamValidator, examController.createRan
 // @access  Private
 router.put("/:id", auth, updateExamValidator, examController.updateExam)
 
+// @route   PUT /api/exams/:id/publish
+// @desc    Publish an exam
+// @access  Private
+router.put("/:id/publish", auth, examController.publishExam)
+
 // @route   PUT /api/exams/:id/regenerate
 // @desc    Regenerate random questions for an exam
 // @access  Private
