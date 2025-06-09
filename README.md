@@ -3,8 +3,12 @@
 ## Description
 Tsinda  Backend is the server-side component of the driving theory learning platform. It provides a robust API for managing users, courses, exams, and content delivery in both English and Kinyarwanda.
 
-## GitHub Repository
-[Link to Backend Repository](https://github.com/your-username/tsinda-backend)
+## Figma mockups Designs 
+[Figma mockups Designs ](https://www.figma.com/design/kWFcPt7KHLj4x8RpGrmE1B/Tsindacyane-design?node-id=137-1540&t=xxx4bHJQMv6MQDoL-1)
+
+## GitHub Repository || The Reason why I created two separate repository is to facilitate in the deploymentof the web application
+[Link to Frontend Repository](https://github.com/eldadgishinge/tsinda_front_end)
+[Link to Backend Repository](https://github.com/eldadgishinge/Tsinda-backend)
 
 ## Architecture Overview
 The backend follows the MVC (Model-View-Controller) architecture pattern:
