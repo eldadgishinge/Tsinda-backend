@@ -36,6 +36,12 @@ mongoose
 const auth = require("./middleware/auth")
 
 // Routes that don't require authentication
+
+app.use("/", (req, res) => {
+  res.send("Welcome Tsinda Backend Application");
+});
+
+
 app.use("/api/auth", require("./routes/authRoutes"))
 
 // Apply authentication middleware to all routes below
