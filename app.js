@@ -37,9 +37,6 @@ const auth = require("./middleware/auth")
 
 // Routes that don't require authentication
 
-app.use("/", (req, res) => {
-  res.send("Welcome Tsinda Backend Application");
-});
 
 
 app.use("/api/auth", require("./routes/authRoutes"))
@@ -55,6 +52,11 @@ app.use("/api/questions", require("./routes/questionRoutes"))
 app.use("/api/exams", require("./routes/examRoutes"))
 app.use("/api/enrollments", require("./routes/enrollmentRoutes"))
 app.use("/api/exam-attempts", require("./routes/examAttemptRoutes"))
+
+app.use("/hello", (req, res) => {
+  res.send().json({ message: "Tsinda Backend Applicatin is ready deployed" });
+});
+
 
 // Error handling middleware
 app.use((err, req, res, next) => {
