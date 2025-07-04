@@ -36,7 +36,7 @@ exports.createCategory = async (req, res) => {
       return res.status(400).json({ errors: errors.array() })
     }
 
-    const { categoryName, description } = req.body
+    const { categoryName, description ,language} = req.body
 
     // Check if category already exists
     const existingCategory = await Category.findOne({ categoryName })
@@ -47,6 +47,7 @@ exports.createCategory = async (req, res) => {
     const category = new Category({
       categoryName,
       description,
+      language
     })
 
     await category.save()
@@ -66,7 +67,7 @@ exports.updateCategory = async (req, res) => {
       return res.status(400).json({ errors: errors.array() })
     }
 
-    const { categoryName, description } = req.body
+    const { categoryName, description,language } = req.body
 
     // Check if category exists
     const category = await Category.findById(req.params.id)
@@ -85,6 +86,8 @@ exports.updateCategory = async (req, res) => {
     // Update category
     category.categoryName = categoryName
     category.description = description
+    category.language = language
+    category.updatedAt = Date.now();
 
     await category.save()
 

@@ -16,6 +16,13 @@ const CategorySchema = new mongoose.Schema({
     type: String,
     trim: true,
   },
+  language: {
+    type: String,
+    required: [true, "Language is required"],
+    enum: ["ENG", "FRA", "KIN"], // Assuming these are the supported languages
+    default: "KIN",
+  },
+  
   createdAt: {
     type: Date,
     default: Date.now,
