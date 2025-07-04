@@ -69,56 +69,75 @@ exports.getQuestionsByCreator = async (req, res) => {
 // Get random questions
 exports.getRandomQuestions = async (req, res) => {
   try {
-    const { count = 10, categoryId, difficulty } = req.query
-
-    // Validate count is a number and within reasonable limits
-    const questionCount = Number.parseInt(count)
+    const { count = 10, categoryId, difficulty, language = "KIN" } = req.query;
+    const questionCount = Number.parseInt(count);
     if (isNaN(questionCount) || questionCount < 1 || questionCount > 100) {
       return res.status(400).json({
         message: "Question count must be a number between 1 and 100",
-      })
+      });
     }
 
-    // Build query based on provided filters
-    const query = { status: "Active" }
+    // Build aggregation pipeline
+    const pipeline = [
+      { $match: { status: "Active" } },
+      {
+        $lookup: {
+          from: "categories",
+          localField: "category",
+          foreignField: "_id",
+          as: "categoryObj",
+        },
+      },
+      { $unwind: "$categoryObj" },
+      { $match: { "categoryObj.language": language } },
+    ];
 
     if (categoryId) {
-      query.category = categoryId
+      pipeline.push({ $match: { category: categoryId } });
     }
-
     if (difficulty) {
-      query.difficulty = difficulty
+      pipeline.push({ $match: { difficulty } });
     }
 
-    // Count total available questions matching the query
-    const totalQuestions = await Question.countDocuments(query)
-
+    // Count total available questions matching the pipeline
+    const totalQuestionsArr = await Question.aggregate([
+      ...pipeline,
+      { $count: "total" },
+    ]);
+    const totalQuestions = totalQuestionsArr[0]?.total || 0;
     if (totalQuestions === 0) {
       return res.status(404).json({
         message: "No questions found matching the criteria",
-      })
+      });
     }
+    const fetchCount = Math.min(questionCount, totalQuestions);
 
-    // Determine how many questions to fetch (min of requested count and available count)
-    const fetchCount = Math.min(questionCount, totalQuestions)
+    // Fetch random questions
+    const randomQuestions = await Question.aggregate([
+      ...pipeline,
+      { $sample: { size: fetchCount } },
+    ]);
 
-    // Fetch random questions using aggregation pipeline
-    const randomQuestions = await Question.aggregate([{ $match: query }, { $sample: { size: fetchCount } }])
-
-    // Populate references
+    // Populate createdBy for each question
     await Question.populate(randomQuestions, [
-      { path: "category", select: "categoryName" },
       { path: "createdBy", select: "email phoneNumber" },
-    ])
+    ]);
 
-    res.json({
-      total: totalQuestions,
-      fetched: randomQuestions.length,
+    // Exam info
+    const examInfo = {
+      title: `General Assessment (${fetchCount} Questions) - ${language === "KIN" ? "Kinyarwanda" : language === "ENG" ? "English" : language === "FRA" ? "French" : language}`,
+      description: `Custom general assessment with mixed questions in ${language === "KIN" ? "Kinyarwanda" : language === "ENG" ? "English" : language === "FRA" ? "French" : language}`,
+      duration: fetchCount, // Duration matches the number of questions returned
+      passingScore: 70,
+      questionCount: fetchCount,
+      category: categoryId || "",
+      language,
       questions: randomQuestions,
-    })
+    };
+    res.json(examInfo);
   } catch (error) {
-    console.error("Get random questions error:", error)
-    res.status(500).json({ message: "Server error" })
+    console.error("Get random questions error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 }
 
