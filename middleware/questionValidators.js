@@ -39,6 +39,10 @@ exports.randomQuestionsValidator = [
     .optional()
     .isIn(["Easy", "Medium", "Difficult"])
     .withMessage("Difficulty must be Easy, Medium, or Difficult"),
+  query("language")
+    .optional()
+    .isIn(["KIN", "ENG", "FRA"])
+    .withMessage("Language must be KIN, ENG, or FRA"),
 ]
 
 exports.createExamValidator = [
