@@ -31,7 +31,7 @@ exports.getUserEnrollments = async (req, res) => {
       user: req.user.id,
       status: "active",
     })
-      .populate("course", "title description videoUrl documentUrl")
+      .populate("course", "title description videoUrl documentUrl thumbnailUrl")
       .sort({ enrollmentDate: -1 })
 
     res.json(enrollments)
@@ -179,7 +179,7 @@ exports.getUserCompletedCourses = async (req, res) => {
       completedAt: { $exists: true, $ne: null },
       status: "active",
     })
-      .populate("course", "title description videoUrl documentUrl")
+      .populate("course", "title description videoUrl documentUrl thumbnailUrl")
       .sort({ completedAt: -1 })
 
     res.json(completedEnrollments)

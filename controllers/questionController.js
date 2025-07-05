@@ -141,6 +141,85 @@ exports.getRandomQuestions = async (req, res) => {
   }
 }
 
+// Get random questions by category ID only
+exports.getRandomQuestionsByCategory = async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+    const { count = 10 } = req.query;
+    const questionCount = Number.parseInt(count);
+    
+    if (isNaN(questionCount) || questionCount < 1 || questionCount > 100) {
+      return res.status(400).json({
+        message: "Question count must be a number between 1 and 100",
+      });
+    }
+
+    // Check if category exists
+    const category = await Category.findById(categoryId);
+    if (!category) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+
+    // Build aggregation pipeline for category-specific questions
+    const pipeline = [
+      { $match: { status: "Active", category: categoryId } },
+      {
+        $lookup: {
+          from: "categories",
+          localField: "category",
+          foreignField: "_id",
+          as: "categoryObj",
+        },
+      },
+      { $unwind: "$categoryObj" },
+    ];
+
+    // Count total available questions in this category
+    const totalQuestionsArr = await Question.aggregate([
+      ...pipeline,
+      { $count: "total" },
+    ]);
+    const totalQuestions = totalQuestionsArr[0]?.total || 0;
+    
+    if (totalQuestions === 0) {
+      return res.status(404).json({
+        message: "No questions found in this category",
+      });
+    }
+    
+    const fetchCount = Math.min(questionCount, totalQuestions);
+
+    // Fetch random questions from this category
+    const randomQuestions = await Question.aggregate([
+      ...pipeline,
+      { $sample: { size: fetchCount } },
+    ]);
+
+    // Populate createdBy for each question
+    await Question.populate(randomQuestions, [
+      { path: "createdBy", select: "email phoneNumber" },
+    ]);
+
+    // Exam info
+    const examInfo = {
+      title: `${category.categoryName} Assessment (${fetchCount} Questions)`,
+      description: `Random questions from ${category.categoryName} category`,
+      duration: fetchCount,
+      passingScore: 70,
+      questionCount: fetchCount,
+      category: categoryId,
+      categoryName: category.categoryName,
+      language: category.language,
+      questions: randomQuestions,
+    };
+    
+    res.json(examInfo);
+  } catch (error) {
+    console.error("Get random questions by category error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+}
+
 // Create new question
 exports.createQuestion = async (req, res) => {
   try {

@@ -18,6 +18,11 @@ router.get("/", auth, questionController.getAllQuestions)
 // @access  Private
 router.get("/random", auth, randomQuestionsValidator, questionController.getRandomQuestions)
 
+// @route   GET /api/questions/random/category/:categoryId
+// @desc    Get random questions by category ID
+// @access  Private
+router.get("/random/category/:categoryId", auth, questionController.getRandomQuestionsByCategory)
+
 // @route   GET /api/questions/:id
 // @desc    Get question by ID
 // @access  Private
