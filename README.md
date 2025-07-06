@@ -71,6 +71,7 @@ User 1:N ExamAttempt N:1 Exam
 ```
 
 ### Schema Details
+
 - User Schema: Includes auth and profile info, JWT, password hashing
 - Course Schema: Educational course data structure
 - Question Schema: Exam questions with options and validation
