@@ -68,6 +68,7 @@ Course 1:N Exam
 Question N:1 Category
 Exam N:N Question
 User 1:N ExamAttempt N:1 Exam
+
 ```
 
 ### Schema Details
