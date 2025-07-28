@@ -53,7 +53,7 @@ exports.startExamAttempt = async (req, res) => {
       path: "exam",
       populate: {
         path: "questions",
-        select: "text imageUrl answerOptions difficulty",
+        select: "text imageUrl answerOptions difficulty rightAnswerDescription",
       },
     })
 

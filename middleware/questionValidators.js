@@ -6,10 +6,11 @@ exports.createQuestionValidator = [
     .withMessage("Question text is required")
     .isLength({ min: 5 })
     .withMessage("Question text must be at least 5 characters"),
-  body("imageUrl").optional().isURL().withMessage("Image URL must be a valid URL"),
+  body("imageUrl").optional().isString().withMessage("Image URL must be a string"),
   body("answerOptions").isArray({ min: 4, max: 4 }).withMessage("Question must have exactly 4 answer options"),
   body("answerOptions.*.text").notEmpty().withMessage("Answer option text is required"),
   body("answerOptions.*.isCorrect").isBoolean().withMessage("isCorrect must be a boolean"),
+  body("rightAnswerDescription").optional().isString().withMessage("Right answer description must be a string"),
   body("difficulty").isIn(["Easy", "Medium", "Difficult"]).withMessage("Difficulty must be Easy, Medium, or Difficult"),
   body("status").isIn(["Active", "Inactive"]).withMessage("Status must be Active or Inactive"),
   body("category").notEmpty().withMessage("Category is required"),
@@ -17,13 +18,14 @@ exports.createQuestionValidator = [
 
 exports.updateQuestionValidator = [
   body("text").optional().isLength({ min: 5 }).withMessage("Question text must be at least 5 characters"),
-  body("imageUrl").optional().isURL().withMessage("Image URL must be a valid URL"),
+  body("imageUrl").optional().isString().withMessage("Image URL must be a string"),
   body("answerOptions")
     .optional()
     .isArray({ min: 4, max: 4 })
     .withMessage("Question must have exactly 4 answer options"),
   body("answerOptions.*.text").optional().notEmpty().withMessage("Answer option text is required"),
   body("answerOptions.*.isCorrect").optional().isBoolean().withMessage("isCorrect must be a boolean"),
+  body("rightAnswerDescription").optional().isString().withMessage("Right answer description must be a string"),
   body("difficulty")
     .optional()
     .isIn(["Easy", "Medium", "Difficult"])

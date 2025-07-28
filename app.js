@@ -3,16 +3,15 @@ const mongoose = require("mongoose")
 const passport = require("./config/passport")
 const session = require("express-session")
 const cors = require("cors")
+const jwt = require("jsonwebtoken")
 require("dotenv").config()
 
 const app = express()
 
-// Middleware
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cors())
 
-// Session middleware (required for Passport)
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "tsinda-cyane-secret",
@@ -22,29 +21,48 @@ app.use(
   }),
 )
 
-// Initialize Passport
 app.use(passport.initialize())
 app.use(passport.session())
 
-// Connect to MongoDB
 mongoose
   .connect(process.env.MONGODB_URI)
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.error("MongoDB connection error:", err))
 
-// Authentication middleware
 const auth = require("./middleware/auth")
 
-// Routes that don't require authentication
+const devAuth = (req, res, next) => {
+  if (process.env.NODE_ENV !== "production") {
+    if (!req.header("Authorization")) {
+      req.user = {
+        _id: "dev-user-id",
+        email: "dev@example.com",
+        phoneNumber: "1234567890"
+      }
+      return next()
+    }
+  }
+  return auth(req, res, next)
+}
 
-
+if (process.env.NODE_ENV !== "production") {
+  app.get("/api/dev/token", (req, res) => {
+    const token = jwt.sign(
+      { id: "dev-user-id" },
+      process.env.JWT_SECRET || "dev-secret",
+      { expiresIn: "24h" }
+    )
+    res.json({
+      token,
+      message: "Development token generated. Use this in Authorization header: Bearer <token>"
+    })
+  })
+}
 
 app.use("/api/auth", require("./routes/authRoutes"))
 
-// Apply authentication middleware to all routes below
-app.use(auth)
+app.use(devAuth)
 
-// Routes that require authentication
 app.use("/api/categories", require("./routes/categoryRoutes"))
 app.use("/api/courses", require("./routes/courseRoutes"))
 app.use("/api/upload", require("./routes/uploadRoutes"))
@@ -57,14 +75,11 @@ app.use("/hello", (req, res) => {
   res.send().json({ message: "Tsinda Backend Applicatin is ready deployed" });
 });
 
-
-// Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack)
   res.status(500).json({ message: "Something went wrong!" })
 })
 
-// Start server
 const PORT = process.env.PORT || 4000
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
 
