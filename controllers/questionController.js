@@ -228,7 +228,7 @@ exports.createQuestion = async (req, res) => {
       return res.status(400).json({ errors: errors.array() })
     }
 
-    const { text, imageUrl, answerOptions, difficulty, status, category } = req.body
+    const { text, imageUrl, answerOptions, rightAnswerDescription, difficulty, status, category } = req.body
 
     // Check if category exists
     const categoryExists = await Category.findById(category)
@@ -254,6 +254,7 @@ exports.createQuestion = async (req, res) => {
       text,
       imageUrl,
       answerOptions,
+      rightAnswerDescription,
       difficulty,
       status,
       category,
@@ -277,7 +278,7 @@ exports.updateQuestion = async (req, res) => {
       return res.status(400).json({ errors: errors.array() })
     }
 
-    const { text, imageUrl, answerOptions, difficulty, status, category } = req.body
+    const { text, imageUrl, answerOptions, rightAnswerDescription, difficulty, status, category } = req.body
 
     // Check if question exists
     const question = await Question.findById(req.params.id)
@@ -318,6 +319,7 @@ exports.updateQuestion = async (req, res) => {
     if (text) question.text = text
     if (imageUrl !== undefined) question.imageUrl = imageUrl
     if (answerOptions) question.answerOptions = answerOptions
+    if (rightAnswerDescription !== undefined) question.rightAnswerDescription = rightAnswerDescription
     if (difficulty) question.difficulty = difficulty
     if (status) question.status = status
     if (category) question.category = category

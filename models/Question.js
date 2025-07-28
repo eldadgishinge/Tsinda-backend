@@ -42,6 +42,11 @@ const QuestionSchema = new mongoose.Schema({
       message: "Question must have exactly 4 answer options with exactly 1 correct answer",
     },
   },
+  rightAnswerDescription: {
+    type: String,
+    trim: true,
+    required: false,
+  },
   difficulty: {
     type: String,
     enum: ["Easy", "Medium", "Difficult"],
