@@ -24,20 +24,36 @@ app.use(
 app.use(passport.initialize())
 app.use(passport.session())
 
-mongoose
-  .connect(process.env.MONGODB_URI)
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.error("MongoDB connection error:", err))
+// Only connect to MongoDB if not in test environment
+if (process.env.NODE_ENV !== 'test') {
+  mongoose
+    .connect(process.env.MONGODB_URI)
+    .then(() => console.log("MongoDB connected"))
+    .catch((err) => console.error("MongoDB connection error:", err))
+}
 
 const auth = require("./middleware/auth")
 
 const devAuth = (req, res, next) => {
+  // In test environment, always create a mock user
+  if (process.env.NODE_ENV === 'test') {
+    req.user = {
+      _id: "test-user-id",
+      email: "test@example.com",
+      phoneNumber: "1234567890",
+      role: "user"
+    }
+    return next()
+  }
+  
+  // In development, check for Authorization header
   if (process.env.NODE_ENV !== "production") {
     if (!req.header("Authorization")) {
       req.user = {
         _id: "dev-user-id",
         email: "dev@example.com",
-        phoneNumber: "1234567890"
+        phoneNumber: "1234567890",
+        role: "user"
       }
       return next()
     }
@@ -72,7 +88,7 @@ app.use("/api/enrollments", require("./routes/enrollmentRoutes"))
 app.use("/api/exam-attempts", require("./routes/examAttemptRoutes"))
 
 app.use("/hello", (req, res) => {
-  res.send().json({ message: "Tsinda Backend Applicatin is ready deployed" });
+  res.json({ message: "Tsinda Backend Application is ready deployed" });
 });
 
 app.use((err, req, res, next) => {
@@ -80,8 +96,11 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: "Something went wrong!" })
 })
 
-const PORT = process.env.PORT || 4000
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
+// Only start server if not in test environment
+if (process.env.NODE_ENV !== 'test') {
+  const PORT = process.env.PORT || 4000
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
+}
 
 module.exports = app
 

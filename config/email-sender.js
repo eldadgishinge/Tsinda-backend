@@ -11,6 +11,13 @@ const transporter = nodemailer.createTransport({
       pass: process.env.EMAIL_PASS,
     },
   });
+
+// Function to close transporter (for cleanup)
+function closeTransporter() {
+  if (transporter) {
+    transporter.close();
+  }
+}
   
 
 // Function to replace template placeholders
@@ -58,8 +65,6 @@ async function sendVerificationEmail(userEmail, userName, verificationCode) {
     
     // Send the email
     const info = await transporter.sendMail(mailOptions);
-    console.log('Verification email sent to:', userEmail);
-    console.log('Message ID:', info.messageId);
     
     return {
       success: true,
@@ -76,4 +81,5 @@ async function sendVerificationEmail(userEmail, userName, verificationCode) {
 
 module.exports = {
   sendVerificationEmail,
+  closeTransporter,
 };
