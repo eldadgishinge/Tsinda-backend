@@ -87,6 +87,12 @@ app.use("/api/exams", require("./routes/examRoutes"))
 app.use("/api/enrollments", require("./routes/enrollmentRoutes"))
 app.use("/api/exam-attempts", require("./routes/examAttemptRoutes"))
 
+// Payment Service Routes
+app.use("/api/payments", require("./routes/paymentRoutes"))
+
+// MTN Authentication Service Routes
+app.use("/api/mtn", require("./routes/mtnAuthRoutes"))
+
 app.use("/hello", (req, res) => {
   res.json({ message: "Tsinda Backend Application is ready deployed" });
 });
