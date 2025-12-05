@@ -22,6 +22,19 @@ const config = {
     }
   },
 
+  // Airtel Money API Configuration
+  airtel: {
+    baseURL: process.env.AIRTEL_BASE_URL || 'https://openapiuat.airtel.africa',
+    clientId: process.env.AIRTEL_CLIENT_ID,
+    clientSecret: process.env.AIRTEL_CLIENT_SECRET,
+    msisdn: process.env.AIRTEL_MSISDN,
+    retry: {
+      maxRetries: parseInt(process.env.AIRTEL_MAX_RETRIES) || 3,
+      retryDelay: parseInt(process.env.AIRTEL_RETRY_DELAY) || 1000,
+      timeout: parseInt(process.env.AIRTEL_API_TIMEOUT) || 10000
+    }
+  },
+
   // Payment Service Configuration
   payment: {
     maxAmount: parseInt(process.env.PAYMENT_MAX_AMOUNT) || 1000000,
@@ -36,7 +49,8 @@ const config = {
   // Database Configuration
   database: {
     paymentCollection: 'payments',
-    mtnUserCollection: 'mtnusers'
+    mtnUserCollection: 'mtnusers',
+    airtelUserCollection: 'airtelusers'
   },
 
   // API Configuration
@@ -91,6 +105,15 @@ function validateConfig() {
     errors.push('MTN_DISBURSEMENTS_KEY is required');
   }
 
+  // Validate Airtel configuration
+  if (!config.airtel.clientId) {
+    errors.push('AIRTEL_CLIENT_ID is required');
+  }
+
+  if (!config.airtel.clientSecret) {
+    errors.push('AIRTEL_CLIENT_SECRET is required');
+  }
+
   // Validate payment configuration
   if (config.payment.maxAmount <= 0) {
     errors.push('PAYMENT_MAX_AMOUNT must be greater than 0');
@@ -112,6 +135,8 @@ function getServiceConfig(serviceName) {
   switch (serviceName) {
     case 'mtn':
       return config.mtn;
+    case 'airtel':
+      return config.airtel;
     case 'payment':
       return config.payment;
     case 'database':

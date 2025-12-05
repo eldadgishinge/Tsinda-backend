@@ -77,6 +77,11 @@ if (process.env.NODE_ENV !== "production") {
 
 app.use("/api/auth", require("./routes/authRoutes"))
 
+// Airtel callback webhook (no authentication required - must be before devAuth)
+const AirtelPaymentController = require("./controllers/AirtelPaymentController");
+const airtelPaymentController = new AirtelPaymentController();
+app.post("/api/airtel-payments/callback", (req, res) => airtelPaymentController.callback(req, res));
+
 app.use(devAuth)
 
 app.use("/api/categories", require("./routes/categoryRoutes"))
@@ -92,6 +97,22 @@ app.use("/api/payments", require("./routes/paymentRoutes"))
 
 // MTN Authentication Service Routes
 app.use("/api/mtn", require("./routes/mtnAuthRoutes"))
+
+// Airtel Authentication Service Routes
+app.use("/api/airtel", require("./routes/airtelAuthRoutes"))
+
+// Airtel Payment Service Routes (completely separate from MTN)
+app.use("/api/airtel-payments", require("./routes/airtelPaymentRoutes"))
+
+// Subscription Routes
+app.use("/api/subscriptions", require("./routes/subscriptionRoutes"))
+
+// Alias route for subscription payment (simpler endpoint)
+app.post("/api/payment", (req, res) => {
+  const SubscriptionController = require("./controllers/SubscriptionController");
+  const subscriptionController = new SubscriptionController();
+  return subscriptionController.createSubscriptionPayment(req, res);
+})
 
 app.use("/hello", (req, res) => {
   res.json({ message: "Tsinda Backend Application is ready deployed" });
