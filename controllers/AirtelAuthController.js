@@ -1,19 +1,11 @@
 const AirtelAuthService = require('../services/AirtelAuthService');
 const { ErrorResponseDTO, SuccessResponseDTO } = require('../dto/PaymentDTO');
 
-/**
- * Airtel Authentication Controller
- * Handles Airtel authentication and user management endpoints
- */
 class AirtelAuthController {
   constructor() {
     this.airtelAuth = new AirtelAuthService();
   }
 
-  /**
-   * Get Airtel user status
-   * GET /api/airtel/status
-   */
   async getAirtelUserStatus(req, res) {
     try {
       const status = await this.airtelAuth.getAirtelUserStatus();
@@ -26,10 +18,6 @@ class AirtelAuthController {
     }
   }
 
-  /**
-   * Initialize Airtel user
-   * POST /api/airtel/initialize
-   */
   async initializeAirtelUser(req, res) {
     try {
       const airtelUser = await this.airtelAuth.initializeAirtelUser();
@@ -42,10 +30,6 @@ class AirtelAuthController {
     }
   }
 
-  /**
-   * Test Airtel connectivity
-   * GET /api/airtel/test
-   */
   async testConnectivity(req, res) {
     try {
       const result = await this.airtelAuth.testConnectivity();
@@ -58,10 +42,6 @@ class AirtelAuthController {
     }
   }
 
-  /**
-   * Get user statistics
-   * GET /api/airtel/stats
-   */
   async getUserStats(req, res) {
     try {
       const stats = await this.airtelAuth.getUserStats();
@@ -74,10 +54,6 @@ class AirtelAuthController {
     }
   }
 
-  /**
-   * Reset Airtel user (for testing)
-   * DELETE /api/airtel/reset
-   */
   async resetAirtelUser(req, res) {
     try {
       const result = await this.airtelAuth.resetAirtelUser();
@@ -90,17 +66,10 @@ class AirtelAuthController {
     }
   }
 
-  /**
-   * Get access token
-   * GET /api/airtel/tokens/access
-   * This endpoint gets a fresh token directly from Airtel API
-   */
   async getAccessToken(req, res) {
     try {
-      // Get a fresh token directly from Airtel API
       const tokenResponse = await this.airtelAuth.getAccessToken();
       
-      // Log token response for debugging
       console.log('Token Response in Controller:', {
         hasAccessToken: !!tokenResponse.access_token,
         tokenType: tokenResponse.token_type,
@@ -109,7 +78,6 @@ class AirtelAuthController {
         fullResponse: tokenResponse
       });
       
-      // Return the full token response including expires_in, token_type, etc.
       const response = SuccessResponseDTO.fromData({
         access_token: tokenResponse.access_token,
         token_type: tokenResponse.token_type || 'Bearer',
@@ -123,11 +91,9 @@ class AirtelAuthController {
     } catch (error) {
       console.error('Get access token error:', error);
       
-      // Provide more detailed error information
       let errorMessage = error.message || 'Failed to get access token';
       let statusCode = 500;
       
-      // Check if it's a configuration error
       if (errorMessage.includes('not configured')) {
         statusCode = 400;
         errorMessage = 'Airtel credentials are not configured. Please set AIRTEL_CLIENT_ID and AIRTEL_CLIENT_SECRET in your .env file.';
@@ -141,58 +107,7 @@ class AirtelAuthController {
     }
   }
 
-  /**
-   * Get Encryption Keys
-   * GET /api/airtel/encryption-keys
-   */
-  async getEncryptionKeys(req, res) {
-    try {
-      const country = req.headers['x-country'] || req.query.country || 'RW';
-      const currency = req.headers['x-currency'] || req.query.currency || 'RWF';
-      
-      const result = await this.airtelAuth.getEncryptionKeys(country, currency);
-      const response = SuccessResponseDTO.fromData(result, 'Encryption keys retrieved successfully');
-      res.status(200).json(response);
-    } catch (error) {
-      console.error('Get encryption keys error:', error);
-      const errorResponse = ErrorResponseDTO.fromError(error, 'Failed to get encryption keys');
-      res.status(500).json(errorResponse);
-    }
-  }
 
-  /**
-   * Encrypt PIN
-   * POST /api/airtel/encrypt-pin
-   */
-  async encryptPIN(req, res) {
-    try {
-      const { pin } = req.body;
-      
-      if (!pin) {
-        const errorResponse = ErrorResponseDTO.fromError(
-          new Error('PIN is required'),
-          'PIN is required for encryption'
-        );
-        return res.status(400).json(errorResponse);
-      }
-
-      const country = req.headers['x-country'] || req.query.country || 'RW';
-      const currency = req.headers['x-currency'] || req.query.currency || 'RWF';
-      
-      const result = await this.airtelAuth.encryptPIN(pin, country, currency);
-      const response = SuccessResponseDTO.fromData(result, 'PIN encrypted successfully');
-      res.status(200).json(response);
-    } catch (error) {
-      console.error('Encrypt PIN error:', error);
-      const errorResponse = ErrorResponseDTO.fromError(error, 'Failed to encrypt PIN');
-      res.status(500).json(errorResponse);
-    }
-  }
-
-  /**
-   * Health check for Airtel service
-   * GET /api/airtel/health
-   */
   async healthCheck(req, res) {
     try {
       const health = {
@@ -210,17 +125,12 @@ class AirtelAuthController {
     }
   }
 
-  /**
-   * Check Airtel configuration (without exposing secrets)
-   * GET /api/airtel/config-check
-   */
   async checkConfig(req, res) {
     try {
       const { validateAirtelConfig } = require('../utils/validateAirtelConfig');
       const { getServiceConfig } = require('../config/paymentConfig');
       const airtelConfig = getServiceConfig('airtel');
       
-      // Run validation
       const validation = validateAirtelConfig();
       
       const configStatus = {
