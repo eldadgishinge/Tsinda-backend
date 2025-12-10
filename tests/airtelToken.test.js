@@ -1,10 +1,15 @@
 require('dotenv').config();
 
 describe('Airtel Token API', () => {
+  afterAll(async () => {
+    // Give time for connections to close properly
+    await new Promise(resolve => setTimeout(resolve, 500));
+  });
+
   test('POST https://openapiuat.airtel.africa/auth/oauth2/token should return access token', async () => {
     const inputBody = {
-      client_id: '1f07332e-4b1a-436d-938c-3a21685176fe',
-      client_secret: 'a5645a3-0d2c-4eb5-bbd0-ccf4abc93315',
+      client_id: process.env.AIRTEL_CLIENT_ID || '3ce996af-eb40-476d-bc5b-dcf385dd9ea0',
+      client_secret: process.env.AIRTEL_CLIENT_SECRET || '61f944cb-1216-4f6d-9c80-cda9f1d70f4f',
       grant_type: 'client_credentials'
     };
 
@@ -16,7 +21,9 @@ describe('Airtel Token API', () => {
 
     const headers = {
       'Content-Type': 'application/json',
-      'Accept': '*/*'
+      'Accept': '*/*',
+      'Connection': 'close',
+      'Cookie': 'visid_incap_2967769=OuF6ejqtT/mBvA/Oxh+1LKzE52gAAAAAQUIPAAAAAAAm07DTETctcaDQz8F8Rq0B'
     };
 
     const response = await fetch('https://openapiuat.airtel.africa/auth/oauth2/token', {
@@ -29,12 +36,20 @@ describe('Airtel Token API', () => {
     console.log('Response:', body);
 
     if (response.ok) {
+      // Expected response format:
+      // {
+      //   "token_type": "bearer",
+      //   "access_token": "ppRoG9z3JXbwEjZIyLjOrhYa6VWiUv39",
+      //   "expires_in": 180
+      // }
       expect(body).toHaveProperty('access_token');
       expect(body).toHaveProperty('token_type');
       expect(body).toHaveProperty('expires_in');
-      expect(body.token_type).toBe('Bearer');
+      expect(body.token_type.toLowerCase()).toBe('bearer');
       expect(typeof body.expires_in).toBe('number');
-      console.log(body);
+      expect(typeof body.access_token).toBe('string');
+      expect(body.expires_in).toBeGreaterThan(0);
+      console.log('Success! Access token received:', body.access_token.substring(0, 10) + '...');
     } else {
       console.error('Error response:', body);
       throw new Error(`Failed to get token: ${response.status} ${JSON.stringify(body)}`);

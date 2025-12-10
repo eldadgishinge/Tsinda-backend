@@ -27,7 +27,9 @@ class AirtelAuthService {
       
       const headers = {
         'Content-Type': 'application/json',
-        'Accept': '*/*'
+        'Accept': '*/*',
+        'Connection': 'close',
+        'Cookie': 'visid_incap_2967769=OuF6ejqtT/mBvA/Oxh+1LKzE52gAAAAAQUIPAAAAAAAm07DTETctcaDQz8F8Rq0B'
       };
 
       const response = await fetch(url, {
