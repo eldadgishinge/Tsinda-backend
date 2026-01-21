@@ -75,17 +75,26 @@ class MTNCollectionService {
       
       const url = `${this.baseURL}/collection/v1_0/requesttopay`;
       
+      // Get callback URL from environment variable
+      const finalCallbackUrl = process.env.MTN_CALLBACK_URL;
+      
+      if (!finalCallbackUrl) {
+        throw new Error('MTN_CALLBACK_URL environment variable is not set. Please configure it in your .env file.');
+      }
+
       const headers = {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
         'X-Reference-Id': referenceId,
         'X-Target-Environment': targetEnvironment,
+        'X-Callback-Url': finalCallbackUrl.trim(),
         'Ocp-Apim-Subscription-Key': this.subscriptionKey
       };
 
-      if (callbackUrl) {
-        headers['X-Callback-Url'] = callbackUrl;
-      }
+      console.log('=== Callback URL Configuration ===');
+      console.log('X-Callback-Url header:', headers['X-Callback-Url']);
+      console.log('Callback URL length:', headers['X-Callback-Url'].length);
+      console.log('==================================');
 
       const body = {
         amount: String(requestData.amount),

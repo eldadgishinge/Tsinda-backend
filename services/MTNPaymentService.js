@@ -13,9 +13,10 @@ class MTNPaymentService {
     try {
       const referenceId = crypto.randomUUID();
       const targetEnvironment = options.targetEnvironment || process.env.MTN_TARGET_ENVIRONMENT || 'mtnrwanda';
-      // Set default callback URL if not provided
+      // Set callback URL - use provided, env variable, or default to DigitalOcean URL
       const callbackUrl = options.callbackUrl || process.env.MTN_CALLBACK_URL || 
-        (process.env.BASE_URL ? `${process.env.BASE_URL}/api/mtn-payment/callback` : null);
+        (process.env.BASE_URL ? `${process.env.BASE_URL}/api/mtn-payment/callback` : 
+        'https://oyster-app-lag65.ondigitalocean.app/api/mtn-payment/callback');
       
       const currency = 'RWF';
       const payerMessage = 'subscription';
