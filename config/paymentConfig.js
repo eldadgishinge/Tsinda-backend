@@ -6,12 +6,12 @@
 const config = {
   // MTN MoMo API Configuration
   mtn: {
-    baseURL: process.env.MTN_BASE_URL || 'https://sandbox.momodeveloper.mtn.com',
+    baseURL: process.env.MTN_BASE_URL || 'https://proxy.momoapi.mtn.co.rw',
     xReferenceId: process.env.MTN_X_REFERENCE_ID,
     providerCallbackHost: process.env.MTN_PROVIDER_CALLBACK_HOST || 'https://webhook.site/your-unique-id',
     subscriptionKeys: {
-      collectionWidget: process.env.MTN_COLLECTION_WIDGET_KEY || 'c054967e79c8403abf6ee97d8cbb90e9',
-      collections: process.env.MTN_COLLECTIONS_KEY || 'a53980187b844bda9a09f72ed0672ccb',
+      collectionWidget: process.env.MTN_COLLECTION_WIDGET_KEY || '18ecd8220a7d4987986376d398993e91',
+      collections: process.env.MTN_COLLECTIONS_KEY || 'a79e8f7a265e740368c761377537fd095',
       disbursements: process.env.MTN_DISBURSEMENTS_KEY || '1ab10f676c994372b198ed461d9687b6',
       remittances: process.env.MTN_REMITTANCES_KEY || 'a01aed515cc143a5a38d3f704ad9de0c'
     },

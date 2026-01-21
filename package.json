@@ -10,6 +10,9 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
+    "test:verbose": "jest --verbose",
+    "test:silent": "jest --silent",
+    "test:ci": "jest --ci --coverage --maxWorkers=2",
     "test:summary": "node tests/test-summary.js"
   },
   "keywords": [

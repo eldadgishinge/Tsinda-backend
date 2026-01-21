@@ -42,8 +42,8 @@ const paymentSchema = new mongoose.Schema({
   currency: {
     type: String,
     required: true,
-    default: 'EUR',
-    enum: ['EUR', 'USD', 'XAF', 'XOF']
+    default: 'RWF',
+    enum: ['RWF', 'EUR', 'USD', 'XAF', 'XOF', 'UGX', 'KES', 'TZS']
   },
   externalId: {
     type: String,
@@ -113,6 +113,9 @@ const paymentSchema = new mongoose.Schema({
   completedAt: {
     type: Date
   },
+  failedAt: {
+    type: Date
+  },
   
   // Metadata
   metadata: {
@@ -161,12 +164,17 @@ paymentSchema.virtual('transactionSummary').get(function() {
 // Methods
 paymentSchema.methods.updateStatus = function(newStatus, mtnResponse = null) {
   this.status = newStatus;
+  this.mtnStatus = newStatus;
   if (mtnResponse) {
     this.mtnResponse = mtnResponse;
   }
   
-  if (newStatus === 'SUCCESSFUL' || newStatus === 'FAILED') {
+  if (newStatus === 'SUCCESSFUL') {
     this.completedAt = new Date();
+    this.failedAt = null;
+  } else if (newStatus === 'FAILED') {
+    this.failedAt = new Date();
+    this.completedAt = null;
   }
   
   return this.save();
@@ -189,6 +197,7 @@ paymentSchema.methods.toPaymentDTO = function() {
     mtnStatus: this.mtnStatus,
     processedAt: this.processedAt,
     completedAt: this.completedAt,
+    failedAt: this.failedAt,
     createdAt: this.createdAt,
     updatedAt: this.updatedAt
   };

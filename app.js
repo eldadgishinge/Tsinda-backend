@@ -82,6 +82,11 @@ const AirtelPaymentController = require("./controllers/AirtelPaymentController")
 const airtelPaymentController = new AirtelPaymentController();
 app.post("/api/airtel-payments/callback", (req, res) => airtelPaymentController.callback(req, res));
 
+// MTN callback webhook (no authentication required - must be before devAuth)
+const MTNPaymentController = require("./controllers/MTNPaymentController");
+const mtnPaymentController = new MTNPaymentController();
+app.post("/api/mtn-payment/callback", (req, res) => mtnPaymentController.callback(req, res));
+
 app.use(devAuth)
 
 app.use("/api/categories", require("./routes/categoryRoutes"))
@@ -97,6 +102,9 @@ app.use("/api/payments", require("./routes/paymentRoutes"))
 
 // MTN Authentication Service Routes
 app.use("/api/mtn", require("./routes/mtnAuthRoutes"))
+
+// MTN Payment Service Routes (simplified with userId and amount)
+app.use("/api/mtn-payment", require("./routes/mtnPaymentRoutes"))
 
 // Airtel Authentication Service Routes
 app.use("/api/airtel", require("./routes/airtelAuthRoutes"))
