@@ -53,7 +53,7 @@ class MTNPaymentService {
         // externalId = userId (your application user ID)
         const payment = new Payment({
           xReferenceId: referenceId,
-          apiUserId: mtnUser.xReferenceId,
+          apiUserId: process.env.MTN_API_USER,
           apiKey: mtnUser.apiKey,
           transactionType: 'collection',
           transactionSubType: 'request_to_pay',

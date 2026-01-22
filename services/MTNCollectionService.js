@@ -58,12 +58,15 @@ class MTNCollectionService {
   async getAccountBalance(targetEnvironment = 'mtnrwanda') {
     try {
       const token = await this.getValidToken();
+      const mtnConfig = getServiceConfig('mtn');
+      const subscriptionKey = (process.env.MTN_COLLECTION_WIDGET_KEY || mtnConfig.subscriptionKeys.collections || '').trim().replace(/^['"]|['"]$/g, '');
+      
       const url = `${this.baseURL}/collection/v1_0/account/balance`;
       
       const headers = {
         'Authorization': `Bearer ${token}`,
         'X-Target-Environment': targetEnvironment,
-        'Ocp-Apim-Subscription-Key': this.subscriptionKey
+        'Ocp-Apim-Subscription-Key': subscriptionKey
       };
 
       const response = await fetch(url, {
@@ -87,6 +90,10 @@ class MTNCollectionService {
     try {
       const token = await this.getValidToken();
       
+      // Use EXACT same subscription key logic as getValidToken()
+      const mtnConfig = getServiceConfig('mtn');
+      const subscriptionKey = (process.env.MTN_COLLECTION_WIDGET_KEY || mtnConfig.subscriptionKeys.collections || '').trim().replace(/^['"]|['"]$/g, '');
+      
       const url = `${this.baseURL}/collection/v1_0/requesttopay`;
       
       const headers = {
@@ -94,7 +101,7 @@ class MTNCollectionService {
         'Content-Type': 'application/json',
         'X-Reference-Id': referenceId,
         'X-Target-Environment': targetEnvironment,
-        'Ocp-Apim-Subscription-Key': this.subscriptionKey
+        'Ocp-Apim-Subscription-Key': subscriptionKey
       };
 
       // Add callback URL if provided
@@ -113,6 +120,25 @@ class MTNCollectionService {
         payeeNote: requestData.payeeNote || ''
       };
 
+      // Debug: Log exact request details
+      console.error('=== RequestToPay Request Details ===');
+      console.error('URL:', url);
+      console.error('Method: POST');
+      console.error('Token:', token ? `${token.substring(0, 20)}...` : 'NOT SET');
+      console.error('Subscription Key:', subscriptionKey ? `${subscriptionKey.substring(0, 4)}...${subscriptionKey.substring(subscriptionKey.length - 4)}` : 'NOT SET');
+      console.error('Full Subscription Key:', subscriptionKey);
+      console.error('Subscription Key Length:', subscriptionKey.length);
+      console.error('Headers:', JSON.stringify({
+        'Authorization': `Bearer ${token ? token.substring(0, 20) + '...' : 'NOT SET'}`,
+        'Content-Type': headers['Content-Type'],
+        'X-Reference-Id': referenceId,
+        'X-Target-Environment': targetEnvironment,
+        'Ocp-Apim-Subscription-Key': subscriptionKey,
+        'X-Callback-Url': headers['X-Callback-Url'] || 'NOT SET'
+      }, null, 2));
+      console.error('Request Body:', JSON.stringify(body, null, 2));
+      console.error('====================================');
+
       const response = await fetch(url, {
         method: 'POST',
         headers: headers,
@@ -128,6 +154,13 @@ class MTNCollectionService {
       } catch (e) {
         errorBody = { raw: responseText };
       }
+
+      // Debug: Log response details
+      console.error('=== RequestToPay Response Details ===');
+      console.error('Status:', response.status, response.statusText);
+      console.error('Response Headers:', JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2));
+      console.error('Response Body:', JSON.stringify(errorBody, null, 2));
+      console.error('=====================================');
 
       if (response.status === 202) {
         return { status: response.status, referenceId };
@@ -154,12 +187,16 @@ class MTNCollectionService {
   async getRequestToPayStatus(referenceId, targetEnvironment = 'mtnrwanda') {
     try {
       const token = await this.getValidToken();
+      // Use EXACT same subscription key logic as getValidToken()
+      const mtnConfig = getServiceConfig('mtn');
+      const subscriptionKey = (process.env.MTN_COLLECTION_WIDGET_KEY || mtnConfig.subscriptionKeys.collections || '').trim().replace(/^['"]|['"]$/g, '');
+      
       const url = `${this.baseURL}/collection/v1_0/requesttopay/${referenceId}`;
       
       const headers = {
         'Authorization': `Bearer ${token}`,
         'X-Target-Environment': targetEnvironment,
-        'Ocp-Apim-Subscription-Key': this.subscriptionKey
+        'Ocp-Apim-Subscription-Key': subscriptionKey
       };
 
       const response = await fetch(url, {
