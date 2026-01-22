@@ -5,7 +5,7 @@ describe('MTN Payment Service Tests', () => {
   let paymentService;
   let paymentReferenceId;
   const testUserId = process.env.TEST_USER_ID || '3456';
-  const testPhoneNumber = process.env.TEST_PHONE_NUMBER || '250785300458';
+  const testPhoneNumber = process.env.TEST_PHONE_NUMBER || '250790885588';
   const testAmount = 100;
 
   beforeAll(() => {

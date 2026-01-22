@@ -12,14 +12,6 @@ const paymentSchema = new mongoose.Schema({
     unique: true,
     index: true
   },
-  apiUserId: {
-    type: String,
-    required: true
-  },
-  apiKey: {
-    type: String,
-    required: true
-  },
   
   // Transaction details
   transactionType: {
@@ -116,6 +108,9 @@ const paymentSchema = new mongoose.Schema({
   failedAt: {
     type: Date
   },
+  paymentDate: {
+    type: Date
+  },
   
   // Metadata
   metadata: {
@@ -127,10 +122,6 @@ const paymentSchema = new mongoose.Schema({
   serviceType: {
     type: String,
     enum: ['collection_widget', 'collections', 'disbursements', 'remittances'],
-    required: true
-  },
-  subscriptionKey: {
-    type: String,
     required: true
   }
 }, {

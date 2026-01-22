@@ -77,9 +77,11 @@ class MTNPaymentController {
           
         } else if (callbackData.status === 'SUCCESSFUL') {
           // Update to SUCCESSFUL status - payment completed at user end
+          const paymentDate = new Date();
           payment.status = 'SUCCESSFUL';
           payment.mtnStatus = 'SUCCESSFUL';
-          payment.completedAt = new Date();
+          payment.completedAt = paymentDate;
+          payment.paymentDate = paymentDate;
           payment.failedAt = null;
           
           if (callbackData.financialTransactionId) {

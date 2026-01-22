@@ -62,8 +62,6 @@ class PaymentService {
       // Create payment record
       const payment = new Payment({
         xReferenceId: crypto.randomUUID(),
-        apiUserId: mtnUser.xReferenceId,
-        apiKey: mtnUser.apiKey,
         transactionType: 'collection',
         transactionSubType: 'request_to_pay',
         amount: dto.amount,
@@ -72,8 +70,7 @@ class PaymentService {
         payer: dto.payer,
         payerMessage: dto.payerMessage,
         payeeNote: dto.payeeNote,
-        serviceType: 'collections',
-        subscriptionKey: this.subscriptionKeys.collections
+        serviceType: 'collections'
       });
 
       await payment.save();
@@ -133,8 +130,6 @@ class PaymentService {
       // Create payment record
       const payment = new Payment({
         xReferenceId: crypto.randomUUID(),
-        apiUserId: mtnUser.xReferenceId,
-        apiKey: mtnUser.apiKey,
         transactionType: 'disbursement',
         transactionSubType: 'transfer',
         amount: dto.amount,
@@ -143,8 +138,7 @@ class PaymentService {
         payee: dto.payee,
         payerMessage: dto.payerMessage,
         payeeNote: dto.payeeNote,
-        serviceType: 'disbursements',
-        subscriptionKey: this.subscriptionKeys.disbursements
+        serviceType: 'disbursements'
       });
 
       await payment.save();
@@ -204,8 +198,6 @@ class PaymentService {
       // Create payment record
       const payment = new Payment({
         xReferenceId: crypto.randomUUID(),
-        apiUserId: mtnUser.xReferenceId,
-        apiKey: mtnUser.apiKey,
         transactionType: 'disbursement',
         transactionSubType: 'refund',
         amount: dto.amount,
@@ -214,8 +206,7 @@ class PaymentService {
         payerMessage: dto.payerMessage,
         payeeNote: dto.payeeNote,
         referenceIdToRefund: dto.referenceIdToRefund,
-        serviceType: 'disbursements',
-        subscriptionKey: this.subscriptionKeys.disbursements
+        serviceType: 'disbursements'
       });
 
       await payment.save();

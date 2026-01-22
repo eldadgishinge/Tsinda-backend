@@ -53,8 +53,6 @@ class MTNPaymentService {
         // externalId = userId (your application user ID)
         const payment = new Payment({
           xReferenceId: referenceId,
-          apiUserId: process.env.MTN_API_USER,
-          apiKey: mtnUser.apiKey,
           transactionType: 'collection',
           transactionSubType: 'request_to_pay',
           amount: amount,
@@ -69,7 +67,6 @@ class MTNPaymentService {
           status: 'PENDING',
           mtnStatus: 'PENDING',
           serviceType: 'collections',
-          subscriptionKey: this.mtnConfig.subscriptionKeys.collections,
           mtnResponse: { status: result.status, referenceId: result.referenceId }
         });
 
