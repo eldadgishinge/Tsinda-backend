@@ -232,14 +232,29 @@ class MTNCollectionService {
       // EXACT same implementation as testTokenOnly.js
       const mtnConfig = getServiceConfig('mtn');
       const baseURL = mtnConfig.baseURL;
-      const subscriptionKey = process.env.MTN_COLLECTION_WIDGET_KEY || mtnConfig.subscriptionKeys.collections;
+      
+      // Trim subscription key to remove any whitespace or quotes
+      let subscriptionKey = (process.env.MTN_COLLECTION_WIDGET_KEY || mtnConfig.subscriptionKeys.collections || '').trim().replace(/^['"]|['"]$/g, '');
       
       // Use provided API User and API Key (exact same as testTokenOnly.js)
-      const ApiUser = process.env.MTN_API_USER || 'caa0eb38-33e6-4bf0-acf1-04f18020d379';
-      const apiKey = process.env.MTN_API_KEY || 'b4c09a94258a44e89cd8c3345d3cd237';
+      let ApiUser = (process.env.MTN_API_USER ).trim().replace(/^['"]|['"]$/g, '');
+      let apiKey = (process.env.MTN_API_KEY).trim().replace(/^['"]|['"]$/g, '');
+      
+      // Debug: Log exact values being used
+      console.error('=== Token Generation Debug ===');
+      console.error('API User:', ApiUser);
+      console.error('API Key:', apiKey ? `${apiKey.substring(0, 4)}...${apiKey.substring(apiKey.length - 4)}` : 'NOT SET');
+      console.error('Subscription Key:', subscriptionKey ? `${subscriptionKey.substring(0, 4)}...${subscriptionKey.substring(subscriptionKey.length - 4)}` : 'NOT SET');
+      console.error('Full Subscription Key:', subscriptionKey);
+      console.error('Subscription Key Length:', subscriptionKey.length);
+      console.error('============================');
       
       if (!ApiUser || !apiKey) {
         throw new Error('MTN_API_USER or MTN_API_KEY not set');
+      }
+      
+      if (!subscriptionKey) {
+        throw new Error('MTN_COLLECTION_WIDGET_KEY not set');
       }
 
       const url = `${baseURL}/collection/token/`;
@@ -251,12 +266,38 @@ class MTNCollectionService {
         'Ocp-Apim-Subscription-Key': subscriptionKey
       };
 
+      // Debug: Log exact request details
+      console.error('=== Token Request Details ===');
+      console.error('URL:', url);
+      console.error('Method: POST');
+      console.error('Headers:', JSON.stringify({
+        'Authorization': `Basic ${auth.substring(0, 20)}...`,
+        'Content-Type': headers['Content-Type'],
+        'Ocp-Apim-Subscription-Key': subscriptionKey
+      }, null, 2));
+      console.error('Auth String (before base64):', `${ApiUser}:${apiKey}`);
+      console.error('Base64 Auth:', auth);
+      console.error('============================');
+
       const response = await fetch(url, {
         method: 'POST',
         headers: headers
       });
 
-      const body = await response.json();
+      const responseText = await response.text();
+      let body;
+      try {
+        body = JSON.parse(responseText);
+      } catch (e) {
+        body = { raw: responseText };
+      }
+      
+      // Debug: Log response details
+      console.error('=== Token Response Details ===');
+      console.error('Status:', response.status, response.statusText);
+      console.error('Response Headers:', JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2));
+      console.error('Response Body:', JSON.stringify(body, null, 2));
+      console.error('=============================');
 
       if (response.status === 200) {
         return body.access_token;
