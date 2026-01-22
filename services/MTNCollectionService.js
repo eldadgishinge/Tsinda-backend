@@ -5,19 +5,27 @@ class MTNCollectionService {
   constructor() {
     this.mtnConfig = getServiceConfig('mtn');
     this.baseURL = this.mtnConfig.baseURL;
-    // Use same subscription key logic as test file
+    // Use exact same logic as testTokenOnly.js
     this.subscriptionKey = process.env.MTN_COLLECTION_WIDGET_KEY || this.mtnConfig.subscriptionKeys.collections;
   }
 
-  async getToken(xReferenceId, apiKey) {
+  async getToken(xReferenceId, apiKey, subscriptionKey = null) {
     try {
-      const url = `${this.baseURL}/collection/token/`;
-      const auth = Buffer.from(`${xReferenceId}:${apiKey}`).toString('base64');
+      // EXACT same implementation as testTokenOnly.js
+      const baseURL = this.baseURL;
+      const keyToUse = subscriptionKey || this.subscriptionKey;
+      
+      // Use provided API User and API Key (exact same as testTokenOnly.js)
+      const ApiUser = xReferenceId;
+      const apiKeyValue = apiKey;
+      
+      const url = `${baseURL}/collection/token/`;
+      const auth = Buffer.from(`${ApiUser}:${apiKeyValue}`).toString('base64');
       
       const headers = {
         'Authorization': `Basic ${auth}`,
         'Content-Type': 'application/json',
-        'Ocp-Apim-Subscription-Key': this.subscriptionKey
+        'Ocp-Apim-Subscription-Key': keyToUse
       };
 
       const response = await fetch(url, {
@@ -27,12 +35,21 @@ class MTNCollectionService {
 
       const body = await response.json();
 
-      if (!response.ok) {
+      if (response.status === 200) {
+        return body;
+      } else if (response.status === 401) {
+        console.error('❌ UNAUTHORIZED: Check your credentials or subscription key');
+        console.error('Error:', body.error || body.message);
+        console.error('\nPossible issues:');
+        console.error('1. Invalid API User ID or API Key');
+        console.error('2. Invalid Subscription Key (MTN_COLLECTIONS_KEY)');
+        console.error('3. Subscription key not active for this API user');
+        throw new Error(`Failed to get token: ${response.status} ${JSON.stringify(body)}`);
+      } else {
+        console.error('❌ FAILED:', response.status);
+        console.error('Response:', body);
         throw new Error(`Failed to get token: ${response.status} ${JSON.stringify(body)}`);
       }
-
-      console.log(body);
-      return body;
     } catch (error) {
       throw new Error(`Failed to get collection token: ${error.message}`);
     }
@@ -60,7 +77,6 @@ class MTNCollectionService {
         throw new Error(`Failed to get account balance: ${response.status} ${JSON.stringify(body)}`);
       }
 
-      console.log(body);
       return body;
     } catch (error) {
       throw new Error(`Failed to get account balance: ${error.message}`);
@@ -69,32 +85,24 @@ class MTNCollectionService {
 
   async requestToPay(referenceId, requestData, targetEnvironment = 'mtnrwanda', callbackUrl = null) {
     try {
-      console.log('=== Request to Pay - Getting Token ===');
       const token = await this.getValidToken();
-      console.log('Token obtained successfully');
       
       const url = `${this.baseURL}/collection/v1_0/requesttopay`;
       
-      // Get callback URL from environment variable
-      const finalCallbackUrl = process.env.MTN_CALLBACK_URL;
-      
-      if (!finalCallbackUrl) {
-        throw new Error('MTN_CALLBACK_URL environment variable is not set. Please configure it in your .env file.');
-      }
-
       const headers = {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
         'X-Reference-Id': referenceId,
         'X-Target-Environment': targetEnvironment,
-        'X-Callback-Url': finalCallbackUrl.trim(),
         'Ocp-Apim-Subscription-Key': this.subscriptionKey
       };
 
-      console.log('=== Callback URL Configuration ===');
-      console.log('X-Callback-Url header:', headers['X-Callback-Url']);
-      console.log('Callback URL length:', headers['X-Callback-Url'].length);
-      console.log('==================================');
+      // Add callback URL if provided
+      if (callbackUrl) {
+        headers['X-Callback-Url'] = callbackUrl;
+      } else if (process.env.MTN_CALLBACK_URL) {
+        headers['X-Callback-Url'] = process.env.MTN_CALLBACK_URL;
+      }
 
       const body = {
         amount: String(requestData.amount),
@@ -104,14 +112,6 @@ class MTNCollectionService {
         payerMessage: requestData.payerMessage || '',
         payeeNote: requestData.payeeNote || ''
       };
-
-      console.log('=== Request to Pay API Call ===');
-      console.log('URL:', url);
-      console.log('Method: POST');
-      console.log('Reference ID:', referenceId);
-      console.log('Target Environment:', targetEnvironment);
-      console.log('Request Body:', JSON.stringify(body, null, 2));
-      console.log('Headers:', JSON.stringify({ ...headers, 'Authorization': `Bearer ${token.substring(0, 20)}...` }, null, 2));
 
       const response = await fetch(url, {
         method: 'POST',
@@ -129,13 +129,7 @@ class MTNCollectionService {
         errorBody = { raw: responseText };
       }
 
-      console.log('=== Request to Pay API Response ===');
-      console.log('Status:', response.status, response.statusText);
-      console.log('Response Body:', JSON.stringify(errorBody, null, 2));
-      console.log('===================================');
-
       if (response.status === 202) {
-        console.log('✅ Payment request accepted');
         return { status: response.status, referenceId };
       }
 
@@ -153,7 +147,6 @@ class MTNCollectionService {
 
       throw new Error(`Failed to request payment: ${response.status} ${JSON.stringify(errorBody)}`);
     } catch (error) {
-      console.error('❌ Request to Pay Error:', error.message);
       throw new Error(`Failed to request payment: ${error.message}`);
     }
   }
@@ -208,9 +201,7 @@ class MTNCollectionService {
       const providerCallbackHost = process.env.MTN_PROVIDER_CALLBACK_HOST || 'https://webhook.site/your-unique-id';
       
       if (xReferenceId && apiKey) {
-        console.log('MTN user not found. Creating MTN user from environment variables...');
-        
-        // Get subscription keys from config (same as test file)
+        // Get subscription keys from config (exact same as testTokenOnly.js)
         const subscriptionKeys = {
           collectionWidget: process.env.MTN_COLLECTION_WIDGET_KEY || this.mtnConfig.subscriptionKeys.collectionWidget,
           collections: process.env.MTN_COLLECTION_WIDGET_KEY || this.mtnConfig.subscriptionKeys.collections,
@@ -218,32 +209,16 @@ class MTNCollectionService {
           remittances: process.env.MTN_REMITTANCES_KEY || this.mtnConfig.subscriptionKeys.remittances
         };
         
-        // Generate initial token
-        let collectionToken = null;
-        let collectionTokenExpiresAt = null;
-        
-        try {
-          const tokenResponse = await this.getToken(xReferenceId, apiKey);
-          collectionToken = tokenResponse.access_token;
-          const expiresIn = tokenResponse.expires_in || 180;
-          collectionTokenExpiresAt = new Date(Date.now() + (expiresIn * 1000));
-        } catch (error) {
-          console.warn('Failed to generate initial token, will generate on first use:', error.message);
-        }
-        
-        // Create MTN user
+        // Create MTN user (no token saved, will generate on each request)
         mtnUser = new MTNUser({
           xReferenceId,
           apiKey,
           providerCallbackHost,
-          collectionToken,
-          collectionTokenExpiresAt,
           subscriptionKeys,
           isActive: true
         });
         
         await mtnUser.save();
-        console.log('MTN user created successfully from environment variables');
       } else {
         throw new Error('MTN user not found. Please initialize MTN user first or set MTN_API_USER and MTN_API_KEY environment variables.');
       }
@@ -254,46 +229,43 @@ class MTNCollectionService {
 
   async getValidToken() {
     try {
-      console.log('=== Getting Valid Token ===');
-      const mtnUser = await this.getMTNUser();
-      console.log('MTN User found:', mtnUser.xReferenceId);
+      // EXACT same implementation as testTokenOnly.js
+      const mtnConfig = getServiceConfig('mtn');
+      const baseURL = mtnConfig.baseURL;
+      const subscriptionKey = process.env.MTN_COLLECTION_WIDGET_KEY || mtnConfig.subscriptionKeys.collections;
       
-      const now = new Date();
-      const refreshThreshold = 30 * 1000; // 30 seconds before expiry (tokens expire after 3 minutes)
-
-      // Check if token exists and is still valid (with 30 second buffer)
-      if (mtnUser.collectionToken && 
-          mtnUser.collectionTokenExpiresAt && 
-          new Date(mtnUser.collectionTokenExpiresAt.getTime() - refreshThreshold) > now) {
-        const timeUntilExpiry = Math.floor((mtnUser.collectionTokenExpiresAt.getTime() - now.getTime()) / 1000);
-        console.log(`Using cached collection token (expires in ${timeUntilExpiry} seconds)`);
-        return mtnUser.collectionToken;
+      // Use provided API User and API Key (exact same as testTokenOnly.js)
+      const ApiUser = process.env.MTN_API_USER || 'caa0eb38-33e6-4bf0-acf1-04f18020d379';
+      const apiKey = process.env.MTN_API_KEY || 'b4c09a94258a44e89cd8c3345d3cd237';
+      
+      if (!ApiUser || !apiKey) {
+        throw new Error('MTN_API_USER or MTN_API_KEY not set');
       }
 
-      // Token expired or doesn't exist, generate new one
-      console.log('Generating new collection token (expired or about to expire)...');
-      console.log('Using X-Reference-Id:', mtnUser.xReferenceId);
-      console.log('Using API Key:', mtnUser.apiKey ? `${mtnUser.apiKey.substring(0, 4)}...` : 'NOT SET');
-      console.log('Using Subscription Key:', this.subscriptionKey ? `${this.subscriptionKey.substring(0, 4)}...` : 'NOT SET');
+      const url = `${baseURL}/collection/token/`;
+      const auth = Buffer.from(`${ApiUser}:${apiKey}`).toString('base64');
       
-      const tokenResponse = await this.getToken(mtnUser.xReferenceId, mtnUser.apiKey);
-      console.log('Token response received:', {
-        hasAccessToken: !!tokenResponse.access_token,
-        tokenType: tokenResponse.token_type,
-        expiresIn: tokenResponse.expires_in
-      });
-      
-      // Save token with expiration (MTN tokens typically expire in 3 minutes = 180 seconds)
-      const expiresIn = tokenResponse.expires_in || 180;
-      await mtnUser.updateCollectionToken(
-        tokenResponse.access_token, 
-        expiresIn
-      );
+      const headers = {
+        'Authorization': `Basic ${auth}`,
+        'Content-Type': 'application/json',
+        'Ocp-Apim-Subscription-Key': subscriptionKey
+      };
 
-      console.log(`✅ Collection token refreshed and cached (expires in ${expiresIn} seconds)`);
-      return tokenResponse.access_token;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: headers
+      });
+
+      const body = await response.json();
+
+      if (response.status === 200) {
+        return body.access_token;
+      } else if (response.status === 401) {
+        throw new Error(`Failed to get token: ${response.status} ${JSON.stringify(body)}`);
+      } else {
+        throw new Error(`Failed to get token: ${response.status} ${JSON.stringify(body)}`);
+      }
     } catch (error) {
-      console.error('❌ Failed to get valid token:', error.message);
       throw new Error(`Failed to get valid token: ${error.message}`);
     }
   }

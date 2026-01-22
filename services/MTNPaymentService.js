@@ -13,10 +13,6 @@ class MTNPaymentService {
     try {
       const referenceId = crypto.randomUUID();
       const targetEnvironment = options.targetEnvironment || process.env.MTN_TARGET_ENVIRONMENT || 'mtnrwanda';
-      // Set callback URL - use provided, env variable, or default to DigitalOcean URL
-      const callbackUrl = options.callbackUrl || process.env.MTN_CALLBACK_URL || 
-        (process.env.BASE_URL ? `${process.env.BASE_URL}/api/mtn-payment/callback` : 
-        'https://oyster-app-lag65.ondigitalocean.app/api/mtn-payment/callback');
       
       const currency = 'RWF';
       const payerMessage = 'subscription';
@@ -35,34 +31,15 @@ class MTNPaymentService {
       };
 
       // Get MTN user for API credentials
+      // NOTE: MTN User = API credentials (API User ID + API Key) for authenticating with MTN API
+      //       This is NOT the same as userId (externalId) which is your application user ID
       const mtnUser = await this.collectionService.getMTNUser();
 
-      // Save payment transaction with PENDING status
-      const payment = new Payment({
-        xReferenceId: referenceId,
-        apiUserId: mtnUser.xReferenceId,
-        apiKey: mtnUser.apiKey,
-        transactionType: 'collection',
-        transactionSubType: 'request_to_pay',
-        amount: amount,
-        currency: currency,
-        externalId: userId,
-        payer: {
-          partyIdType: 'MSISDN',
-          partyId: phoneNumber
-        },
-        payerMessage: payerMessage,
-        payeeNote: payeeNote,
-        status: 'PENDING',
-        mtnStatus: 'PENDING',
-        serviceType: 'collections',
-        subscriptionKey: this.mtnConfig.subscriptionKeys.collections
-      });
+      // Set default callback URL if not provided
+      const callbackUrl = options.callbackUrl || process.env.MTN_CALLBACK_URL || 
+        (process.env.BASE_URL ? `${process.env.BASE_URL}/api/mtn-payment/callback` : null);
 
-      await payment.save();
-      console.log(`Payment transaction saved with status PENDING - Reference ID: ${referenceId}, External ID: ${userId}`);
-
-      // Make payment request to MTN
+      // Make payment request to MTN first
       const result = await this.collectionService.requestToPay(
         referenceId,
         requestData,
@@ -70,19 +47,46 @@ class MTNPaymentService {
         callbackUrl
       );
 
-      // Update payment with MTN response
-      payment.mtnResponse = { status: result.status, referenceId: result.referenceId };
-      await payment.save();
+      // Only save transaction if request to pay was successful (status 202)
+      if (result.status === 202) {
+        // Save payment transaction with PENDING status
+        // externalId = userId (your application user ID)
+        const payment = new Payment({
+          xReferenceId: referenceId,
+          apiUserId: mtnUser.xReferenceId,
+          apiKey: mtnUser.apiKey,
+          transactionType: 'collection',
+          transactionSubType: 'request_to_pay',
+          amount: amount,
+          currency: currency,
+          externalId: userId, // userId is used as externalId
+          payer: {
+            partyIdType: 'MSISDN',
+            partyId: phoneNumber
+          },
+          payerMessage: payerMessage,
+          payeeNote: payeeNote,
+          status: 'PENDING',
+          mtnStatus: 'PENDING',
+          serviceType: 'collections',
+          subscriptionKey: this.mtnConfig.subscriptionKeys.collections,
+          mtnResponse: { status: result.status, referenceId: result.referenceId }
+        });
 
-      return {
-        referenceId: result.referenceId,
-        status: result.status,
-        userId: userId,
-        phoneNumber: phoneNumber,
-        amount: amount,
-        currency: currency,
-        paymentId: payment._id
-      };
+        await payment.save();
+
+        return {
+          referenceId: result.referenceId,
+          status: result.status,
+          userId: userId,
+          phoneNumber: phoneNumber,
+          amount: amount,
+          currency: currency,
+          paymentId: payment._id
+        };
+      } else {
+        throw new Error(`Payment request not accepted by MTN. Status: ${result.status}`);
+      }
     } catch (error) {
       console.error('Failed to request payment:', error);
       throw new Error(`Failed to request payment: ${error.message}`);

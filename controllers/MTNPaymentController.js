@@ -12,9 +12,6 @@ class MTNPaymentController {
     try {
       const callbackData = req.body;
 
-      console.log('=== MTN Callback Received ===');
-      console.log('Callback Data:', JSON.stringify(callbackData, null, 2));
-
       // Validate callback data
       if (!callbackData) {
         console.error('Invalid callback data received: empty body');
@@ -54,17 +51,6 @@ class MTNPaymentController {
 
       await callback.save();
 
-      // Log the callback for debugging
-      console.log('MTN callback received and saved:', {
-        callbackId: callback._id,
-        externalId: callbackData.externalId,
-        financialTransactionId: callbackData.financialTransactionId,
-        status: callbackData.status,
-        amount: callbackData.amount,
-        currency: callbackData.currency,
-        timestamp: new Date().toISOString()
-      });
-
       // Update payment transaction based on externalId (userId)
       // Find payment by externalId - can be PENDING, SUCCESSFUL, or FAILED (to handle status updates)
       const payment = await Payment.findOne({ 
@@ -72,9 +58,6 @@ class MTNPaymentController {
       }).sort({ createdAt: -1 }); // Get the most recent payment for this user
 
       if (payment) {
-        console.log(`Updating payment transaction - Payment ID: ${payment._id}, External ID: ${callbackData.externalId}`);
-        console.log(`Current status: ${payment.status}, New status: ${callbackData.status}`);
-        
         // Always update mtnResponse with latest callback data
         payment.mtnResponse = callbackData;
         
@@ -91,8 +74,6 @@ class MTNPaymentController {
           }
           
           await payment.save();
-          console.log(`⏳ Payment transaction updated to PENDING - External ID: ${callbackData.externalId}`);
-          console.log(`   Financial Transaction ID: ${callbackData.financialTransactionId || 'N/A'}`);
           
         } else if (callbackData.status === 'SUCCESSFUL') {
           // Update to SUCCESSFUL status - payment completed at user end
@@ -107,9 +88,6 @@ class MTNPaymentController {
           }
           
           await payment.save();
-          console.log(`✅ Payment transaction completed - Status: SUCCESSFUL, External ID: ${callbackData.externalId}`);
-          console.log(`   Financial Transaction ID: ${callbackData.financialTransactionId || 'N/A'}`);
-          console.log(`   Completed At: ${payment.completedAt}`);
           
         } else if (callbackData.status === 'FAILED') {
           // Update to FAILED status - payment failed at user end
@@ -124,12 +102,7 @@ class MTNPaymentController {
           }
           
           await payment.save();
-          console.log(`❌ Payment transaction failed - Status: FAILED, External ID: ${callbackData.externalId}`);
-          console.log(`   Financial Transaction ID: ${callbackData.financialTransactionId || 'N/A'}`);
-          console.log(`   Failed At: ${payment.failedAt}`);
         }
-      } else {
-        console.warn(`⚠️ No payment found for externalId: ${callbackData.externalId}`);
       }
 
       // Mark callback as processed
